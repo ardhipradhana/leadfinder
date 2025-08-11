@@ -532,7 +532,6 @@
         background: linear-gradient(135deg, #ef4444, #dc2626);
         color: white;
     }
-        
 /* Responsive design */
 @media (max-width: 1024px) {
     .candidates-overview {
@@ -1054,7 +1053,6 @@
         </div>
     </div>
     </div>
-
     <!-- Main App (hidden until authenticated) -->
     <div id="main-app" class="max-w-5xl mx-auto p-6 pt-28" style="display: none;">
         <!-- Header with Logo and Logout button -->
@@ -1547,7 +1545,6 @@
             </div>
         </div>
     </div>
-
     <!-- Pricing Page (add this RIGHT AFTER the main-app div) -->
     <div id="pricing-page" class="max-w-7xl mx-auto p-6" style="display: none;">
         <!-- Header -->
@@ -2095,7 +2092,6 @@
         </button>
     </div>
 </div>
-
 <!-- FAQ Page -->
 <div id="faq-page" class="max-w-4xl mx-auto p-6 support-page-hidden">
     <!-- Hero Section -->
@@ -2489,7 +2485,6 @@
         </button>
     </div>
 </div>
-
 <!-- Privacy Policy Page -->
 <div id="privacy-page" class="max-w-4xl mx-auto p-6 support-page-hidden">
     <!-- Hero Section -->
@@ -3628,7 +3623,6 @@ showProgressModal(title, steps, onCancel = null) {
     return tracker;
 }
 }
-
 // History Management System
 class AnalysisHistory {
     constructor() {
@@ -3810,31 +3804,12 @@ class AnalysisHistory {
 class CreditManager {
     constructor() {
         this.currentUser = null;
-        this.userTier = 'FREE';
         this.creditBalance = 0;
-        this.freeAnalysesUsed = 0;
-        this.proCredits = 0;
-        this.ultraCredits = 0;
-        
-        // Pricing configuration
+        // Pricing remains for UI display
         this.pricing = {
-            FREE: {
-                name: 'Free',
-                monthlyLimit: 3,
-                price: 0
-            },
-            PROFESSIONAL: {
-                name: 'Professional',
-                creditsPerPurchase: 30,
-                price: 599000,
-                priceFormatted: 'Rp 599.000'
-            },
-            ULTRA: {
-                name: 'Ultra',
-                creditsPerPurchase: 20,
-                price: 999000,
-                priceFormatted: 'Rp 999.000'
-            }
+            FREE: { name: 'Free', monthlyLimit: 3, price: 0 },
+            PROFESSIONAL: { name: 'Professional', creditsPerPurchase: 30, price: 599000, priceFormatted: 'Rp 599.000' },
+            ULTRA: { name: 'Ultra', creditsPerPurchase: 20, price: 999000, priceFormatted: 'Rp 999.000' }
         };
     }
 
@@ -3842,341 +3817,55 @@ class CreditManager {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
             this.currentUser = user;
-            await this.loadUserData();
+            await this.loadCredits();
         }
     }
 
-    async loadUserData() {
+    async loadCredits() {
         try {
-            // Try to get existing profile
-            let { data, error } = await supabase
-                .from('user_profiles')
-                .select('*')
-                .eq('id', this.currentUser.id)
-                .single();
-
-            if (error && error.code === 'PGRST116') {
-                // Profile doesn't exist, create it
-                await this.createUserProfile();
-                // Load again after creating
-                ({ data, error } = await supabase
-                    .from('user_profiles')
-                    .select('*')
-                    .eq('id', this.currentUser.id)
-                    .single());
-            }
-
-            if (data) {
-                this.userTier = data.user_tier || 'FREE';
-                this.creditBalance = data.credit_balance || 0;
-                this.proCredits = data.pro_credits || 0;
-                this.ultraCredits = data.ultra_credits || 0;
-                this.freeAnalysesUsed = data.free_analyses_used || 0;
-    
-                // For backward compatibility - if creditBalance exists but no separate credits
-                if (this.creditBalance > 0 && this.proCredits === 0 && this.ultraCredits === 0) {
-                    if (this.userTier === 'ULTRA') {
-                        this.ultraCredits = this.creditBalance;
-                    } else {
-                        this.proCredits = this.creditBalance;
-                    }
-                }
-                
-                // Check if we need to reset free analyses (monthly)
-                await this.checkFreeReset(data.free_reset_date);
-            }
-        } catch (error) {
-            console.error('Error loading user data:', error);
-        }
-    }
-
-    async createUserProfile() {
-        try {
-            const { error } = await supabase
-                .from('user_profiles')
-                .insert({
-                    id: this.currentUser.id,
-                    user_tier: 'FREE',
-                    credit_balance: 0,
-                    free_analyses_used: 0,
-                    free_reset_date: new Date().toISOString().split('T')[0]
-                });
-
+            const { data, error } = await supabase.rpc('get_my_credits');
             if (error) {
-                console.error('Error creating user profile:', error);
+                console.error('Error loading credits:', error);
+                this.creditBalance = 0;
+            } else {
+                this.creditBalance = data || 0;
             }
-        } catch (error) {
-            console.error('Error creating user profile:', error);
+        } catch (err) {
+            console.error('Error loading credits:', err);
+            this.creditBalance = 0;
         }
     }
 
-    async checkFreeReset(lastResetDate) {
-        const now = new Date();
-        const resetDate = new Date(lastResetDate);
-        
-        // If it's a new month, reset free analyses
-        if (now.getMonth() !== resetDate.getMonth() || now.getFullYear() !== resetDate.getFullYear()) {
-            await this.resetFreeAnalyses();
-        }
-    }
-
-    async resetFreeAnalyses() {
-        try {
-            const { error } = await supabase
-                .from('user_profiles')
-                .update({ 
-                    free_analyses_used: 0,
-                    free_reset_date: new Date().toISOString().split('T')[0]
-                })
-                .eq('id', this.currentUser.id);
-
-            if (!error) {
-                this.freeAnalysesUsed = 0;
-            }
-        } catch (error) {
-            console.error('Error resetting free analyses:', error);
-        }
-    }
-
-    canAnalyze() {
-        if (this.userTier === 'FREE') {
-            return this.freeAnalysesUsed < this.pricing.FREE.monthlyLimit;
-        } else {
-            return this.creditBalance > 0;
-        }
+    canAnalyze(count = 1) {
+        return this.creditBalance >= count; // 1 credit per analysis unit
     }
 
     getRemainingAnalyses() {
-        if (this.userTier === 'FREE') {
-            return Math.max(0, this.pricing.FREE.monthlyLimit - this.freeAnalysesUsed);
-        } else {
-            return this.creditBalance;
-        }
+        return this.creditBalance;
     }
 
     getStatus() {
         return {
-            tier: this.userTier,
             remaining: this.getRemainingAnalyses(),
             canAnalyze: this.canAnalyze(),
-            isFreeTier: this.userTier === 'FREE',
-            isUltraTier: this.userTier === 'ULTRA',
-            creditsBalance: this.creditBalance,
-            proCredits: this.proCredits,
-            ultraCredits: this.ultraCredits,
-            freeUsed: this.freeAnalysesUsed
+            creditsBalance: this.creditBalance
         };
     }
 
-    async useAnalysis() {
-        if (!this.canAnalyze()) {
-            throw new Error('No analyses remaining');
+    async useCredits(amount = 1, reason = 'resume_analysis', meta = {}) {
+        if (!this.canAnalyze(amount)) {
+            throw new Error('Insufficient credits');
         }
-
-        try {
-            if (this.userTier === 'FREE') {
-                this.freeAnalysesUsed++;
-                await supabase
-                    .from('user_profiles')
-                    .update({ 
-                        free_analyses_used: this.freeAnalysesUsed,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', this.currentUser.id);
-            } else {
-                this.creditBalance--;
-                await supabase
-                    .from('user_profiles')
-                    .update({ 
-                        credit_balance: this.creditBalance,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', this.currentUser.id);
-            }
-            console.log('Analysis used. Remaining:', this.getRemainingAnalyses());
-        } catch (error) {
-            console.error('Error using analysis:', error);
+        const { error } = await supabase.rpc('spend_credits', { p_amount: amount, p_reason: reason, p_meta: meta });
+        if (error) {
+            console.error('Error spending credits:', error);
             throw error;
         }
-    }
-
-    async addCredits(amount) {
-        try {
-            // Add to PRO credits specifically
-            this.proCredits += amount;
-            this.creditBalance = this.proCredits + this.ultraCredits; // Update total
-        
-            // Update database
-            await supabase
-                .from('user_profiles')
-                .update({ 
-                    pro_credits: this.proCredits,
-                    credit_balance: this.creditBalance,
-                    user_tier: 'PROFESSIONAL',  // Automatically upgrade to professional
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', this.currentUser.id);
-
-            // Log purchase in credit_purchases table
-            await supabase
-                .from('credit_purchases')
-                .insert({
-                    user_id: this.currentUser.id,
-                    credits_purchased: amount,
-                    credit_type: 'PROFESSIONAL', // Add this field
-                    amount_paid: this.pricing.PROFESSIONAL.price
-                });
-
-            this.userTier = 'PROFESSIONAL';
-            console.log(`Added ${amount} PRO credits. New balance: ${this.proCredits}`);
-            return true;
-        } catch (error) {
-            console.error('Error adding PRO credits:', error);
-            return false;
-        }
-    }
-
-    async addUltraCredits(amount) {
-        try {
-            this.ultraCredits += amount;
-            this.creditBalance = this.proCredits + this.ultraCredits; // Update total
-        
-            // Update database
-            await supabase
-                .from('user_profiles')
-                .update({ 
-                    ultra_credits: this.ultraCredits,
-                    credit_balance: this.creditBalance,
-                    user_tier: 'ULTRA',  // Automatically upgrade to ULTRA
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', this.currentUser.id);
-
-            // Log purchase in credit_purchases table
-            await supabase
-                .from('credit_purchases')
-                .insert({
-                    user_id: this.currentUser.id,
-                    credits_purchased: amount,
-                    credit_type: 'ULTRA',
-                    amount_paid: this.pricing.ULTRA.price
-                });
-
-            this.userTier = 'ULTRA';
-            console.log(`Added ${amount} ULTRA credits. New balance: ${this.ultraCredits}`);
-            return true;
-        } catch (error) {
-            console.error('Error adding ULTRA credits:', error);
-            return false;
-        }
-    }
-    
-    calculateCreditConversion() {
-        if (this.userTier !== 'PROFESSIONAL') return null;
-    
-        const proValuePerCredit = 19967; // 599k/30
-        const ultraValuePerCredit = 49950; // 999k/20
-    
-        const totalProValue = this.creditBalance * proValuePerCredit;
-        const fullUltraCredits = Math.floor(totalProValue / ultraValuePerCredit);
-        const remainder = totalProValue % ultraValuePerCredit;
-    
-        // If remainder > 40% of ultra credit value, give bonus credit
-        const bonusCredit = remainder > (ultraValuePerCredit * 0.4) ? 1 : 0;
-        const totalUltraCredits = fullUltraCredits + bonusCredit;
-    
-        return {
-            currentProCredits: this.creditBalance,
-            currentProValue: totalProValue,
-            newUltraCredits: totalUltraCredits,
-            fullCredits: fullUltraCredits,
-            bonusCredits: bonusCredit,
-            remainder: remainder,
-            savings: bonusCredit > 0 ? (ultraValuePerCredit - remainder) : 0
-        };
-    }
-
-    async convertToUltra() {
-        const conversion = this.calculateCreditConversion();
-        if (!conversion) return false;
-    
-        try {
-            // Update to ULTRA tier with converted credits
-            await supabase
-                .from('user_profiles')
-                .update({ 
-                    user_tier: 'ULTRA',
-                    pro_credits: 0,
-                    ultra_credits: conversion.newUltraCredits,
-                    credit_balance: conversion.newUltraCredits,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', this.currentUser.id);
-
-            this.userTier = 'ULTRA';
-            this.proCredits = 0;
-            this.ultraCredits = conversion.newUltraCredits;
-            this.creditBalance = conversion.newUltraCredits;
-        
-            return conversion;
-        } catch (error) {
-            console.error('Error converting to ULTRA:', error);
-            return false;
-        }
-    }
-
-    hasProCredits() {
-        return this.proCredits > 0;
-    }
-
-    hasUltraCredits() {
-        return this.ultraCredits > 0;
-    }
-
-    canDoJobMatching() {
-        return this.ultraCredits > 0;
-    }
-
-    async useProCredit() {
-        if (this.proCredits <= 0) {
-            throw new Error('No PRO credits remaining');
-        }
-    
-        this.proCredits--;
-        this.creditBalance = this.proCredits + this.ultraCredits; // Update total
-        await this.updateCreditsInDatabase();
-        console.log(`PRO credit used. Remaining: ${this.proCredits}`);
-    }
-    
-    async useUltraCredit() {
-        if (this.ultraCredits <= 0) {
-            throw new Error('No ULTRA credits remaining');
-        }
-    
-        this.ultraCredits--;
-        this.creditBalance = this.proCredits + this.ultraCredits; // Update total
-        await this.updateCreditsInDatabase();
-        console.log(`ULTRA credit used. Remaining: ${this.ultraCredits}`);
-    }
-
-    async updateCreditsInDatabase() {
-        try {
-            await supabase
-                .from('user_profiles')
-                .update({ 
-                    pro_credits: this.proCredits,
-                    ultra_credits: this.ultraCredits,
-                    credit_balance: this.proCredits + this.ultraCredits, // Keep for compatibility
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', this.currentUser.id);
-        } catch (error) {
-            console.error('Error updating credits:', error);
-            throw error;
-        }
+        // Refresh local balance
+        await this.loadCredits();
+        return true;
     }
 }
-
 // Midtrans Payment Handler
 // Temporary Test Version - Replace your PaymentHandler class
 // REPLACE your existing PaymentHandler class with this:
@@ -4250,13 +3939,9 @@ class PaymentHandler {
             let success = false;
             const ticketId = 'TXN-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
         
-            if (creditType === 'ULTRA') {
-                // For ULTRA purchases - add to ultra_credits
-                success = await creditManager.addUltraCredits(credits);
-            } else {
-                // For PRO purchases - add to pro_credits  
-                success = await creditManager.addCredits(credits);
-            }
+            // Server-side Midtrans webhook will award credits; just refresh balance here
+            await creditManager.loadCredits();
+            const success = true;
         
             if (success) {
                 showSuccess(`${credits} ${creditType} credits have been added to your account!`);
@@ -4660,7 +4345,6 @@ class MemoryManager {
         this.clearSensitiveData();
     }
 }
-
 // Initialize memory manager
 const memoryManager = new MemoryManager();
 
@@ -5280,7 +4964,6 @@ function toggleSaveCandidate(candidateIndex, event) {
         }
     }
 }
-
 // New function to update specific button
 function updateSpecificSaveButton(candidateIndex, isSaved) {
     // Try multiple approaches to find the correct button
@@ -5914,7 +5597,6 @@ function loadComparisonData(selectedCandidates) {
     
     showSuccess(`Comparing ${selectedCandidates.length} candidates`);
 }
-
 function generateCandidateChips(selectedCandidates) {
     const container = document.getElementById('comparison-candidates-list');
     container.innerHTML = '';
@@ -6464,74 +6146,6 @@ async function exportComparison() {
         
 // Initialize history manager
 const historyManager = new AnalysisHistory();
-    // More methods will be added in next steps...
-
-// Initialize feedback manager
-const feedback = new MontProFeedback();
-const supabaseUrl = 'https://saiwhkhgnsgakvbohwym.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhaXdoa2hnbnNnYWt2Ym9od3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MzIxMjIsImV4cCI6MjA2MzMwODEyMn0.4MUgz7sYll0MYV30mwbAAYkLDs2MtPpSykgvWE10KuU';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-// Global variables
-let files = [];
-window.files = files;
-let fileInput;
-let dragArea;
-let fileListContainer;
-let fileList;
-let fileCount;
-let startButton;
-let errorMessage;
-let errorText;
-let statusMessage;
-let statusText;
-let statusIcon;
-let clearAllBtn;
-let allowedTypes;
-let typeNames;
-let typeIcons;
-let candidateFilter = new CandidateFilter();
-let paymentHandler = new PaymentHandler();
-let analysisCreditsUsed = false;
-
-// XSS Protection - HTML Sanitization
-function sanitizeText(text) {
-    if (!text || typeof text !== 'string') return text;
-    
-    // Create a temporary element to decode HTML entities safely
-    const tempDiv = document.createElement('div');
-    tempDiv.textContent = text;
-    let sanitized = tempDiv.innerHTML;
-    
-    // Remove dangerous HTML tags and attributes
-    sanitized = sanitized
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
-        .replace(/javascript:/gi, '') // Remove javascript: protocol
-        .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick, onload, etc
-        .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
-        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
-        .replace(/<link\b[^>]*>/gi, '') // Remove link tags
-        .replace(/<meta\b[^>]*>/gi, ''); // Remove meta tags
-    
-    return sanitized;
-}
-
-// Safe HTML rendering for candidate data
-function safelySetHTML(element, content) {
-    if (!element) return;
-    
-    if (typeof content === 'string') {
-        // Sanitize and allow basic formatting
-        const sanitized = sanitizeText(content);
-        element.innerHTML = sanitized
-            .replace(/\n/g, '<br>')
-            .replace(/^- /gm, '• ');
-    } else {
-        element.textContent = content || '';
-    }
-}
-
 function updateUsageDisplay() {
     const status = creditManager.getStatus();
     const usageElement = document.getElementById('usage-text');
@@ -6541,65 +6155,19 @@ function updateUsageDisplay() {
         return;
     }
     
-    if (status.isFreeTier) {
-        usageElement.textContent = `${status.remaining}/3 Free Left`;
-        if (status.remaining === 0) {
-            usageElement.className = 'text-red-600 font-medium';
-        } else if (status.remaining === 1) {
-            usageElement.className = 'text-orange-600 font-medium';
-        } else {
-            usageElement.className = 'text-gray-700';
-        }
-        // Show upgrade button for free users
+    usageElement.textContent = `${status.remaining} credits`;
+    if (status.remaining < 5) {
+        usageElement.className = 'text-orange-600 font-medium';
+        // Show upgrade button when credits are low
         if (upgradeBtn) {
             upgradeBtn.classList.remove('hidden');
-            upgradeBtn.innerHTML = '<i class="fas fa-arrow-up mr-1"></i>Upgrade';
+            upgradeBtn.innerHTML = '<i class="fas fa-plus mr-1"></i>Buy Credits';
         }
-        
-    } else if (status.isUltraTier) {
-        // ULTRA user - show both credit types
-        if (status.ultraCredits > 0 && status.proCredits > 0) {
-            usageElement.textContent = `${status.ultraCredits} ULTRA • ${status.proCredits} PRO`;
-            usageElement.className = 'text-purple-600 font-medium';
-        } else if (status.ultraCredits > 0) {
-            usageElement.textContent = `${status.ultraCredits} ULTRA credits`;
-            usageElement.className = 'text-purple-600 font-medium';
-        } else if (status.proCredits > 0) {
-            usageElement.textContent = `${status.proCredits} PRO credits`;
-            usageElement.className = 'text-blue-600 font-medium';
-        } else {
-            usageElement.textContent = `0 credits`;
-            usageElement.className = 'text-red-600 font-medium';
-        }
-        
-        // Show upgrade button when credits are low
-        if ((status.ultraCredits + status.proCredits) < 5) {
-            if (upgradeBtn) {
-                upgradeBtn.classList.remove('hidden');
-                upgradeBtn.innerHTML = '<i class="fas fa-plus mr-1"></i>Buy Credits';
-            }
-        } else {
-            if (upgradeBtn) {
-                upgradeBtn.classList.add('hidden');
-            }
-        }
-        
     } else {
-        // PRO user - show PRO credits
-        usageElement.textContent = `${status.proCredits} PRO credits`;
-        if (status.proCredits < 5) {
-            usageElement.className = 'text-orange-600 font-medium';
-            // Show upgrade button when credits are low
-            if (upgradeBtn) {
-                upgradeBtn.classList.remove('hidden');
-                upgradeBtn.innerHTML = '<i class="fas fa-plus mr-1"></i>Buy Credits';
-            }
-        } else {
-            usageElement.className = 'text-blue-600 font-medium';
-            // Hide button when credits are sufficient
-            if (upgradeBtn) {
-                upgradeBtn.classList.add('hidden');
-            }
+        usageElement.className = 'text-gray-700';
+        // Hide button when credits are sufficient
+        if (upgradeBtn) {
+            upgradeBtn.classList.add('hidden');
         }
     }
     updateJobDescriptionAccess();
@@ -6611,34 +6179,20 @@ function updateJobDescriptionAccess() {
     const jdInfoText = document.getElementById('jd-info-text');
     const jdFeatureBadge = document.getElementById('jd-feature-badge');
     
-    if (status.isUltraTier && status.ultraCredits > 0) {
-        // Enable for ULTRA users with ULTRA credits
+    if (status.canAnalyze) {
+        // Enable for users with credits
         jobDescriptionTextarea.disabled = false;
         jobDescriptionTextarea.classList.remove('bg-gray-100');
-        jdInfoText.textContent = `AI will match candidates against this job description (Uses ULTRA credits: ${status.ultraCredits} available)`;
-        jdFeatureBadge.innerHTML = '<i class="fas fa-crown mr-1"></i>ULTRA Active';
-        jdFeatureBadge.className = 'px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs font-medium rounded shadow-sm';
-    } else if (status.isUltraTier && status.ultraCredits === 0) {
-        // ULTRA user but no ULTRA credits
-        jobDescriptionTextarea.disabled = true;
-        jobDescriptionTextarea.classList.add('bg-gray-100');
-        jdInfoText.innerHTML = 'No ULTRA credits remaining for job matching • <a href="#" onclick="showPricingPage()" class="text-purple-600 hover:text-purple-800">Buy ULTRA Credits</a>';
-        jdFeatureBadge.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Need Credits';
-        jdFeatureBadge.className = 'px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded shadow-sm';
-    } else if (!status.isFreeTier) {
-        // PRO users see upgrade prompt
-        jobDescriptionTextarea.disabled = true;
-        jobDescriptionTextarea.classList.add('bg-gray-100');
-        jdInfoText.innerHTML = 'Upgrade to ULTRA for job description matching • <a href="#" onclick="showPricingPage()" class="text-purple-600 hover:text-purple-800">Upgrade Now</a>';
-        jdFeatureBadge.innerHTML = '<i class="fas fa-crown mr-1"></i>ULTRA Feature';
+        jdInfoText.textContent = `AI will match candidates against this job description (Uses credits: ${status.remaining} available)`;
+        jdFeatureBadge.innerHTML = '<i class="fas fa-crown mr-1"></i>Active';
         jdFeatureBadge.className = 'px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs font-medium rounded shadow-sm';
     } else {
-        // Free users see basic message
+        // Disable for users without credits
         jobDescriptionTextarea.disabled = true;
         jobDescriptionTextarea.classList.add('bg-gray-100');
-        jdInfoText.textContent = 'Upgrade to ULTRA to unlock job description matching';
-        jdFeatureBadge.innerHTML = '<i class="fas fa-crown mr-1"></i>ULTRA Feature';
-        jdFeatureBadge.className = 'px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white text-xs font-medium rounded shadow-sm';
+        jdInfoText.innerHTML = 'No credits remaining for job matching • <a href="#" onclick="showPricingPage()" class="text-purple-600 hover:text-purple-800">Buy Credits</a>';
+        jdFeatureBadge.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Need Credits';
+        jdFeatureBadge.className = 'px-2 py-1 bg-orange-500 text-white text-xs font-medium rounded shadow-sm';
     }
 }
         
@@ -6782,7 +6336,7 @@ function updatePricingPageForUser() {
     const currentPlanBtn = document.getElementById('current-plan-btn');
     const upgradeBtn = document.getElementById('upgrade-professional-btn');
     
-    if (status.isFreeTier) {
+    if (status.remaining < 5) {
         currentPlanBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Paket Aktif';
         upgradeBtn.innerHTML = '<i class="fas fa-rocket mr-2"></i>Beli 30 Credits - Rp 599.000';
     } else {
@@ -6796,91 +6350,37 @@ function updateUltraButtonForProUser() {
     const ultraBtn = document.getElementById('upgrade-ultra-btn');
     const ultraBtnText = document.getElementById('ultra-btn-text');
     
-    if (status.tier === 'PROFESSIONAL' && status.proCredits > 0) {
-        // PRO user with existing credits - show conversion option
-        const conversion = creditManager.calculateCreditConversion();
-        if (conversion) {
-            ultraBtnText.innerHTML = `Convert to ${conversion.newUltraCredits} ULTRA Credits`;
-            
-            // Remove existing help text if any
-            const existingHelp = ultraBtn.parentNode.querySelector('.conversion-help');
-            if (existingHelp) existingHelp.remove();
-            
-            // Add helpful text and second button
-            const helpText = document.createElement('div');
-            helpText.className = 'conversion-help mt-3';
-            helpText.innerHTML = `
-                <p class="text-xs text-green-600 text-center mb-3">
-                    Your ${conversion.currentProCredits} PRO credits = ${conversion.newUltraCredits} ULTRA credits${conversion.bonusCredits > 0 ? ' (+' + conversion.bonusCredits + ' bonus!)' : ''}
-                </p>
-                <div class="text-center">
-                    <button id="buy-new-ultra-btn" class="w-full py-2 px-4 bg-white text-purple-600 border border-purple-600 font-medium rounded-lg hover:bg-purple-50 transition-colors text-sm">
-                        <i class="fas fa-shopping-cart mr-2"></i>
-                        Or Buy 20 New ULTRA Credits - Rp 999.000
-                    </button>
-                </div>
-            `;
-            ultraBtn.parentNode.appendChild(helpText);
-            
-            // Add event listener for the new button
-            document.getElementById('buy-new-ultra-btn').addEventListener('click', () => purchaseNewUltraCredits());
-        }
-    } else if (status.tier === 'ULTRA') {
-        // ULTRA user - show purchase options
-        ultraBtnText.innerHTML = 'Buy More ULTRA Credits';
-        
-        // Remove existing help text if any
-        const existingHelp = ultraBtn.parentNode.querySelector('.conversion-help');
-        if (existingHelp) existingHelp.remove();
-        
-        // Add purchase options
-        const purchaseOptions = document.createElement('div');
-        purchaseOptions.className = 'conversion-help mt-3 space-y-2';
-        purchaseOptions.innerHTML = `
-            <button id="buy-ultra-credits-btn" class="w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm">
-                <i class="fas fa-crown mr-2"></i>
-                Buy 20 ULTRA Credits - Rp 999.000
-            </button>
-            <button id="buy-pro-credits-btn" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                <i class="fas fa-plus mr-2"></i>
-                Buy 30 PRO Credits - Rp 599.000
-            </button>
-            <p class="text-xs text-gray-500 text-center mt-2">
-                PRO credits work for basic analysis • ULTRA credits for job matching
-            </p>
-        `;
-        ultraBtn.parentNode.appendChild(purchaseOptions);
-        
-        // Add event listeners
-        document.getElementById('buy-ultra-credits-btn').addEventListener('click', () => purchaseNewUltraCredits());
-        document.getElementById('buy-pro-credits-btn').addEventListener('click', () => purchaseProCredits());
-        
-        // Hide the main button since we have the options below
-        ultraBtn.style.display = 'none';
-    }
-}
-
-async function convertCreditsToUltra() {
-    const conversion = creditManager.calculateCreditConversion();
-    if (!conversion) {
-        showError('No conversion available');
-        return;
-    }
+    // PRO user - show purchase options
+    ultraBtnText.innerHTML = 'Buy More Credits';
     
-    // Show confirmation
-    const confirmMsg = `Convert ${conversion.currentProCredits} PRO credits to ${conversion.newUltraCredits} ULTRA credits${conversion.bonusCredits > 0 ? ' (including ' + conversion.bonusCredits + ' bonus credit)' : ''}?`;
+    // Remove existing help text if any
+    const existingHelp = ultraBtn.parentNode.querySelector('.conversion-help');
+    if (existingHelp) existingHelp.remove();
     
-    if (!confirm(confirmMsg)) return;
+    // Add purchase options
+    const purchaseOptions = document.createElement('div');
+    purchaseOptions.className = 'conversion-help mt-3 space-y-2';
+    purchaseOptions.innerHTML = `
+        <button id="buy-ultra-credits-btn" class="w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors text-sm">
+            <i class="fas fa-crown mr-2"></i>
+            Buy 20 Credits - Rp 999.000
+        </button>
+        <button id="buy-pro-credits-btn" class="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
+            <i class="fas fa-plus mr-2"></i>
+            Buy 30 Credits - Rp 599.000
+        </button>
+        <p class="text-xs text-gray-500 text-center mt-2">
+            Credits work for basic analysis • ULTRA credits for job matching
+        </p>
+    `;
+    ultraBtn.parentNode.appendChild(purchaseOptions);
     
-    const result = await creditManager.convertToUltra();
-    if (result) {
-        showSuccess(`Converted to ULTRA! You now have ${result.newUltraCredits} ULTRA credits${result.bonusCredits > 0 ? ' (including ' + result.bonusCredits + ' bonus credit!)' : ''}`);
-        updateUsageDisplay();
-        updateJobDescriptionAccess();
-        hidePricingPage();
-    } else {
-        showError('Conversion failed. Please try again.');
-    }
+    // Add event listeners
+    document.getElementById('buy-ultra-credits-btn').addEventListener('click', () => purchaseNewUltraCredits());
+    document.getElementById('buy-pro-credits-btn').addEventListener('click', () => purchaseProCredits());
+    
+    // Hide the main button since we have the options below
+    ultraBtn.style.display = 'none';
 }
 
 async function purchaseNewUltraCredits() {
@@ -7176,7 +6676,6 @@ function showBatchConfirmation(fileCount, batchCount, jobDescription) {
         };
     });
 }
-
 async function processBatchAnalysis(allFiles, jobDescription) {
     const batchSize = 5;
     const batches = [];
@@ -7625,32 +7124,14 @@ async function useAnalysisCredit() {
         
         // Use appropriate credit type for each resume
         for (let i = 0; i < numberOfResumes; i++) {
-            if (hasJobDescription && creditManager.ultraCredits > 0) {
-                // Use ULTRA credit for job matching
-                await creditManager.useUltraCredit();
-                console.log(`Used ULTRA credit ${i + 1}/${numberOfResumes}`);
-            } else if (creditManager.userTier === 'FREE') {
-                // Use free analysis
-                await creditManager.useAnalysis();
-                console.log(`Used free analysis ${i + 1}/${numberOfResumes}`);
-            } else if (creditManager.proCredits > 0) {
-                // Use PRO credit
-                await creditManager.useProCredit();
-                console.log(`Used PRO credit ${i + 1}/${numberOfResumes}`);
-            } else if (creditManager.ultraCredits > 0) {
-                // Fallback to ULTRA credit if no PRO available
-                await creditManager.useUltraCredit();
-                console.log(`Used ULTRA credit (fallback) ${i + 1}/${numberOfResumes}`);
-            } else {
-                throw new Error('No credits available');
-            }
+            await creditManager.useCredits(1, hasJobDescription ? 'resume_analysis_with_jd' : 'resume_analysis', { hasJobDescription });
+            console.log(`Used 1 credit ${i + 1}/${numberOfResumes}`);
         }
         
         // Update the display and show success
         updateUsageDisplay();
         
-        const creditType = hasJobDescription ? 'ULTRA' : (creditManager.userTier === 'FREE' ? 'Free' : 'PRO');
-        showSuccess(`Successfully analyzed ${numberOfResumes} resume(s) using ${creditType} credits!`);
+        showSuccess(`Successfully analyzed ${numberOfResumes} resume(s) using credits!`);
         
     } catch (error) {
         console.error('Error using credits:', error);
@@ -7767,7 +7248,6 @@ function extractTitleFromSummary(candidate) {
     
     return title || 'Professional';
 }
-
 function generatePDF(data) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -8362,7 +7842,6 @@ ${candidate.coreCompetencies ? (typeof candidate.coreCompetencies === 'string' ?
     body += `Generated by MontPro Recruitment Engine`;
     return body;
 }
-        
 async function signIn() {
     const emailEl = document.getElementById('email');
     const authMsg = document.getElementById('auth-msg');
@@ -8992,7 +8471,6 @@ function showCandidateDetail(index) {
 
     updateUserTierBadgeMultiple();
 }
-
 function generateCandidateDetailHTML(candidate, index) {
     const score = parseInt(candidate.candidateScore) || 75;
     const name = candidate.candidateName || `Candidate ${index + 1}`;
@@ -9577,7 +9055,6 @@ function updateUserTierBadgeMultiple() {
         }
     }
 }
-
 function addProfessionalSections(data) {
     const coreCompetenciesContainer = document.getElementById('core-competencies').parentElement;
     
@@ -10121,7 +9598,6 @@ function loadAnalysisFromHistory(analysisId) {
         }
     }, 50);
 }
-
 // Initialize Top Filters for Saved Candidates
 function setupSavedCandidatesTopFilters() {
     // Keywords search (top version)
@@ -10748,7 +10224,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 });
 });
     </script>
-
 <!-- History Modal -->
 <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
