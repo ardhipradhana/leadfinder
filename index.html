@@ -626,18 +626,24 @@
 	                <span class="bg-accent-cyan text-dark-primary px-2 py-1 rounded-full text-xs font-medium">3</span>
 	            </button>
 	
-	            <button id="savedCandidatesBtn" class="bookmarks-tab flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
-	                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-	                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-	                </svg>
-	                <span>My Shortlist</span>
-	                <span id="savedCount" class="text-white font-medium">0 saved</span>
-	            </button>
-	            
-	            <div class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-dark-secondary hover:bg-dark-tertiary transition-colors duration-200 cursor-pointer group" id="creditsContainer" title="Click to view pricing options">
-				    <svg class="w-4 h-4 text-accent-cyan group-hover:text-accent-teal transition-colors" viewBox="0 0 20 20" fill="none">
-				        <path d="M10 2.5L3.5 8.25l6.5 9.25 6.5-9.25L10 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-				        <path d="M3.5 8.25H16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+	                        <button id="savedCandidatesBtn" class="bookmarks-tab flex items-center space-x-2 px-3 py-2 rounded-lg bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                </svg>
+                <span>My Shortlist</span>
+                <span id="savedCount" class="text-white font-medium">0 saved</span>
+            </button>
+            
+            <!-- Role Toggle -->
+            <div id="modeToggle" class="flex items-center bg-dark-secondary rounded-lg border border-gray-600/50 overflow-hidden">
+                <button id="btnRecruiterMode" class="px-3 py-2 text-sm font-medium hover:bg-dark-tertiary transition-colors">Recruiter</button>
+                <button id="btnJobSeekerMode" class="px-3 py-2 text-sm font-medium hover:bg-dark-tertiary transition-colors">Job Seeker</button>
+            </div>
+            
+            <div class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-dark-secondary hover:bg-dark-tertiary transition-colors duration-200 cursor-pointer group" id="creditsContainer" title="Click to view pricing options">
+                <svg class="w-4 h-4 text-accent-cyan group-hover:text-accent-teal transition-colors" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2.5L3.5 8.25l6.5 9.25 6.5-9.25L10 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+                    <path d="M3.5 8.25H16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 				        <path d="M10 17.5V8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
 				        <path d="M6.75 8.25L10 2.5l3.25 5.75" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
 				    </svg>
@@ -673,6 +679,7 @@
 	</header>
 
     <!-- Main Content -->
+    <div id="recruiter-mode">
     <main class="max-w-7xl mx-auto px-6 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Search Form -->
@@ -1183,10 +1190,60 @@
                     </div>
                 </div>
             </div>
-        </div>
+                </div>
     </main>
+    </div>
 
-<!-- Footer -->
+    <!-- Job Seeker Mode -->
+    <section id="jobseeker-mode" class="max-w-7xl mx-auto px-6 py-8 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Resume Upload & List -->
+            <div class="lg:col-span-2">
+                <div class="bg-dark-secondary rounded-xl p-6 border border-gray-600/50 shadow-lg mb-6">
+                    <h2 class="text-xl font-bold text-white mb-2">Upload Resume</h2>
+                    <p class="text-gray-400 text-sm mb-4">PDF is recommended. Files are stored securely in your private space.</p>
+                    <input id="js-resume-file" type="file" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent-cyan file:text-dark-primary hover:file:bg-accent-teal" />
+                    <button id="js-upload-btn" class="mt-3 px-4 py-2 bg-accent-cyan text-dark-primary rounded-lg font-medium hover:bg-accent-teal transition-colors">Upload</button>
+                    <div id="js-upload-msg" class="text-sm mt-3"></div>
+                </div>
+                
+                <div class="bg-dark-secondary rounded-xl p-6 border border-gray-600/50 shadow-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-semibold text-white">My Resumes</h3>
+                        <button id="js-refresh-resumes" class="text-sm text-gray-300 hover:text-accent-cyan">Refresh</button>
+                    </div>
+                    <div id="js-resume-list" class="space-y-3 text-gray-300 text-sm">
+                        <div class="text-gray-500">No resumes yet.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Tracker -->
+            <div class="lg:col-span-1">
+                <div class="bg-dark-secondary rounded-xl p-6 border border-gray-600/50 shadow-lg mb-6">
+                    <h2 class="text-xl font-bold text-white mb-2">Application Tracker</h2>
+                    <div class="space-y-2">
+                        <input id="js-job-title" type="text" placeholder="Job title" class="w-full px-3 py-2 bg-dark-primary border border-gray-600 rounded-lg text-white placeholder-gray-400" />
+                        <input id="js-job-company" type="text" placeholder="Company" class="w-full px-3 py-2 bg-dark-primary border border-gray-600 rounded-lg text-white placeholder-gray-400" />
+                        <input id="js-job-location" type="text" placeholder="Location" class="w-full px-3 py-2 bg-dark-primary border border-gray-600 rounded-lg text-white placeholder-gray-400" />
+                        <button id="js-add-job" class="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Add to Tracker</button>
+                    </div>
+                </div>
+                
+                <div class="bg-dark-secondary rounded-xl p-6 border border-gray-600/50 shadow-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-semibold text-white">My Jobs</h3>
+                        <button id="js-refresh-jobs" class="text-sm text-gray-300 hover:text-accent-cyan">Refresh</button>
+                    </div>
+                    <div id="js-jobs-list" class="space-y-3 text-gray-300 text-sm">
+                        <div class="text-gray-500">No jobs yet.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer class="border-t mt-12" style="background: #0f172a; border-top: 1px solid rgba(0, 212, 170, 0.2); box-shadow: 0 -1px 20px rgba(0, 212, 170, 0.1);">
         <div class="max-w-7xl mx-auto px-6 py-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -1893,6 +1950,317 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         detectSessionInUrl: true
     }
 });
+
+// Mode routing and Job Seeker features
+let activeMode = 'recruiter';
+
+function setMode(mode, { pushHash = true } = {}) {
+    activeMode = mode === 'jobseeker' ? 'jobseeker' : 'recruiter';
+    localStorage.setItem('mode_preference', activeMode);
+    if (pushHash) {
+        const hash = activeMode === 'jobseeker' ? '#job-seeker' : '#recruiter';
+        if (location.hash !== hash) location.hash = hash;
+    }
+    applyModeUI();
+}
+
+function applyModeUI() {
+    const rec = document.getElementById('recruiter-mode');
+    const js = document.getElementById('jobseeker-mode');
+    const btnRec = document.getElementById('btnRecruiterMode');
+    const btnJS = document.getElementById('btnJobSeekerMode');
+    
+    if (rec && js && btnRec && btnJS) {
+        if (activeMode === 'jobseeker') {
+            rec.classList.add('hidden');
+            js.classList.remove('hidden');
+            btnJS.classList.add('bg-accent-cyan','text-dark-primary');
+            btnRec.classList.remove('bg-accent-cyan','text-dark-primary');
+        } else {
+            js.classList.add('hidden');
+            rec.classList.remove('hidden');
+            btnRec.classList.add('bg-accent-cyan','text-dark-primary');
+            btnJS.classList.remove('bg-accent-cyan','text-dark-primary');
+        }
+    }
+}
+
+async function loadServerModePreference() {
+    try {
+        const { data: userRes } = await supabaseClient.auth.getUser();
+        const user = userRes?.user;
+        if (!user) return null;
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('mode_preference')
+            .eq('id', user.id)
+            .single();
+        if (error) return null;
+        return data?.mode_preference || null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function resolveInitialMode() {
+    const hash = location.hash?.toLowerCase();
+    if (hash === '#job-seeker' || hash === '#jobseeker') return 'jobseeker';
+    if (hash === '#recruiter') return 'recruiter';
+    const ls = localStorage.getItem('mode_preference');
+    if (ls === 'jobseeker' || ls === 'recruiter') return ls;
+    return 'recruiter';
+}
+
+window.addEventListener('hashchange', () => {
+    const next = resolveInitialMode();
+    if (next !== activeMode) setMode(next, { pushHash: false });
+});
+
+// Header toggle listeners
+setTimeout(() => {
+    const btnRec = document.getElementById('btnRecruiterMode');
+    const btnJS = document.getElementById('btnJobSeekerMode');
+    if (btnRec) btnRec.addEventListener('click', () => setMode('recruiter'));
+    if (btnJS) btnJS.addEventListener('click', () => setMode('jobseeker'));
+    // Apply initial mode quickly based on hash/localStorage
+    activeMode = resolveInitialMode();
+    applyModeUI();
+}, 0);
+
+// Job Seeker: Resume upload/list
+async function jsListResumes() {
+    const list = document.getElementById('js-resume-list');
+    if (!list) return;
+    list.innerHTML = '<div class="text-gray-500">Loading...</div>';
+    try {
+        const { data: userRes } = await supabaseClient.auth.getUser();
+        const user = userRes?.user;
+        if (!user) {
+            list.innerHTML = '<div class="text-yellow-400">Login required.</div>';
+            return;
+        }
+        const { data, error } = await supabaseClient
+            .from('resumes')
+            .select('id,file_path,file_size_bytes,created_at')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            list.innerHTML = '<div class="text-gray-500">No resumes yet.</div>';
+            return;
+        }
+        list.innerHTML = '';
+        data.forEach(r => {
+            const sizeKb = r.file_size_bytes ? Math.round(r.file_size_bytes / 1024) : '-';
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between bg-dark-primary rounded-lg p-3 border border-gray-700';
+            row.innerHTML = `
+                <div>
+                    <div class=\"font-medium text-white\">${r.file_path.split('/').pop()}</div>
+                    <div class=\"text-xs text-gray-400\">${new Date(r.created_at).toLocaleString()} • ${sizeKb} KB</div>
+                </div>
+                <div class=\"flex items-center gap-2\">
+                    <button data-id=\"${r.id}\" class=\"js-analyze px-3 py-1 text-xs rounded bg-emerald-600 hover:bg-emerald-700 text-white\">Analyze (1 credit)</button>
+                </div>`;
+            list.appendChild(row);
+        });
+        list.querySelectorAll('.js-analyze').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = Number(e.currentTarget.getAttribute('data-id'));
+                await jsAnalyzeResume(id);
+            });
+        });
+    } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div class=\"text-red-400\">Failed to load resumes.</div>';
+    }
+}
+
+async function jsUploadResume() {
+    const fileInput = document.getElementById('js-resume-file');
+    const msg = document.getElementById('js-upload-msg');
+    msg.textContent = '';
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        msg.className = 'text-sm text-yellow-400 mt-3';
+        msg.textContent = 'Please choose a file.';
+        return;
+    }
+    try {
+        const file = fileInput.files[0];
+        const { data: userRes } = await supabaseClient.auth.getUser();
+        const user = userRes?.user;
+        if (!user) {
+            msg.className = 'text-sm text-yellow-400 mt-3';
+            msg.textContent = 'Login required.';
+            return;
+        }
+        const path = `${user.id}/${Date.now()}_${file.name}`;
+        const { error: upErr } = await supabaseClient.storage.from('resumes').upload(path, file, {
+            cacheControl: '3600',
+            upsert: false
+        });
+        if (upErr) throw upErr;
+        const { error: insErr } = await supabaseClient.from('resumes').insert({
+            user_id: user.id,
+            file_path: path,
+            file_size_bytes: file.size,
+            meta: { name: file.name, type: file.type }
+        });
+        if (insErr) throw insErr;
+        msg.className = 'text-sm text-green-400 mt-3';
+        msg.textContent = 'Uploaded successfully.';
+        fileInput.value = '';
+        await jsListResumes();
+    } catch (e) {
+        console.error(e);
+        msg.className = 'text-sm text-red-400 mt-3';
+        msg.textContent = 'Upload failed.';
+    }
+}
+
+async function jsAnalyzeResume(resumeId) {
+    try {
+        // Spend 1 credit
+        const { error } = await supabaseClient.rpc('spend_credits', { p_amount: 1, p_reason: 'resume_analysis', p_meta: { resumeId } });
+        if (error) {
+            showCustomToast && showCustomToast('Insufficient credits', 'You need credits to analyze resumes.', 'error');
+            return;
+        }
+        // Insert minimal analysis record
+        const { data: userRes } = await supabaseClient.auth.getUser();
+        const user = userRes?.user;
+        await supabaseClient.from('analyses').insert({
+            user_id: user.id,
+            subject_type: 'resume',
+            subject_id: resumeId,
+            analysis_type: 'ats',
+            scores: {},
+            insights: { note: 'Analysis triggered. Results will appear when processing is implemented.' }
+        });
+        // Refresh credits UI
+        const { data: creditsRes2 } = await supabaseClient.rpc('get_my_credits');
+        if (typeof creditsRes2 === 'number') {
+            userCredits = creditsRes2;
+            updateCreditsDisplay();
+        }
+        showCustomToast && showCustomToast('Analysis queued', 'We will notify you when results are ready.', 'success');
+    } catch (e) {
+        console.error(e);
+        showCustomToast && showCustomToast('Error', 'Failed to start analysis.', 'error');
+    }
+}
+
+// Job Seeker: Applications
+async function jsListJobs() {
+    const list = document.getElementById('js-jobs-list');
+    if (!list) return;
+    list.innerHTML = '<div class=\"text-gray-500\">Loading...</div>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('saved_jobs')
+            .select('id,job_json,status,created_at')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            list.innerHTML = '<div class=\"text-gray-500\">No jobs yet.</div>';
+            return;
+        }
+        list.innerHTML = '';
+        data.forEach(j => {
+            const row = document.createElement('div');
+            row.className = 'bg-dark-primary rounded-lg p-3 border border-gray-700';
+            const title = j.job_json?.title || 'Untitled';
+            const company = j.job_json?.company || '—';
+            const location = j.job_json?.location || '—';
+            row.innerHTML = `
+                <div class=\"flex items-center justify-between\">
+                    <div>
+                        <div class=\"font-medium text-white\">${title}</div>
+                        <div class=\"text-xs text-gray-400\">${company} • ${location}</div>
+                    </div>
+                    <div class=\"flex items-center gap-2\">
+                        <select data-id=\"${j.id}\" class=\"js-status px-2 py-1 bg-dark-secondary border border-gray-600 rounded text-xs text-gray-200\">
+                            <option ${j.status==='saved'?'selected':''} value=\"saved\">Saved</option>
+                            <option ${j.status==='applied'?'selected':''} value=\"applied\">Applied</option>
+                            <option ${j.status==='interview'?'selected':''} value=\"interview\">Interview</option>
+                            <option ${j.status==='offer'?'selected':''} value=\"offer\">Offer</option>
+                            <option ${j.status==='rejected'?'selected':''} value=\"rejected\">Rejected</option>
+                        </select>
+                    </div>
+                </div>`;
+            list.appendChild(row);
+        });
+        list.querySelectorAll('.js-status').forEach(sel => {
+            sel.addEventListener('change', async (e) => {
+                const id = Number(e.currentTarget.getAttribute('data-id'));
+                const val = e.currentTarget.value;
+                try {
+                    await supabaseClient.from('saved_jobs').update({ status: val }).eq('id', id);
+                    showCustomToast && showCustomToast('Updated', 'Status updated.', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showCustomToast && showCustomToast('Error', 'Failed to update status.', 'error');
+                }
+            });
+        });
+    } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div class=\"text-red-400\">Failed to load jobs.</div>';
+    }
+}
+
+async function jsAddJob() {
+    const title = document.getElementById('js-job-title').value.trim();
+    const company = document.getElementById('js-job-company').value.trim();
+    const location = document.getElementById('js-job-location').value.trim();
+    if (!title) {
+        showCustomToast && showCustomToast('Missing title', 'Please enter job title.', 'error');
+        return;
+    }
+    try {
+        await supabaseClient.from('saved_jobs').insert({
+            job_json: { title, company, location },
+            status: 'saved'
+        });
+        document.getElementById('js-job-title').value = '';
+        document.getElementById('js-job-company').value = '';
+        document.getElementById('js-job-location').value = '';
+        await jsListJobs();
+        showCustomToast && showCustomToast('Added', 'Job added to tracker.', 'success');
+    } catch (e) {
+        console.error(e);
+        showCustomToast && showCustomToast('Error', 'Failed to add job.', 'error');
+    }
+}
+
+// Wire Job Seeker buttons after DOM
+setTimeout(() => {
+    const upBtn = document.getElementById('js-upload-btn');
+    const refRes = document.getElementById('js-refresh-resumes');
+    const addJob = document.getElementById('js-add-job');
+    const refJobs = document.getElementById('js-refresh-jobs');
+    if (upBtn) upBtn.addEventListener('click', jsUploadResume);
+    if (refRes) refRes.addEventListener('click', jsListResumes);
+    if (addJob) addJob.addEventListener('click', jsAddJob);
+    if (refJobs) refJobs.addEventListener('click', jsListJobs);
+}, 0);
+
+// Enhance auth flow to apply server mode preference on login
+supabaseClient.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+        const serverMode = await loadServerModePreference();
+        if (serverMode === 'jobseeker' || serverMode === 'recruiter') {
+            setMode(serverMode);
+        }
+        // Load JS data lists when switching
+        if (activeMode === 'jobseeker') {
+            jsListResumes();
+            jsListJobs();
+        }
+    }
+});
+
+// Initial apply
+applyModeUI();
 
 
 
