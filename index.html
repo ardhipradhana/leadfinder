@@ -3510,15 +3510,15 @@ function updateModalHeader(candidate) {
 function updateModalAnalysis(candidate) {
     const summaryText = candidateModal.querySelector('.bg-dark-primary p.text-gray-300');
     if (summaryText) {
-        summaryText.textContent = candidate.recommendation || 'AI analysis based on profile matching and experience relevance.';
+        summaryText.textContent = candidate.recommendation || 'AI analysis based on sales potential and business opportunity assessment.';
     }
 
-    // Update score breakdown bars
+    // Update score breakdown bars with sales-focused metrics
     const scoreBreakdown = candidate.scoreBreakdown || {};
-    updateScoreBar('Role Relevance', scoreBreakdown.roleRelevance || 0);
-    updateScoreBar('Experience Match', scoreBreakdown.experienceMatch || 0);
-    updateScoreBar('Location Fit', scoreBreakdown.locationFit || 0);
-    updateScoreBar('Profile Quality', scoreBreakdown.profileQuality || 0);
+    updateScoreBar('Decision Authority', scoreBreakdown.decisionAuthority || 0);
+    updateScoreBar('Budget Influence', scoreBreakdown.companyFit || 0);
+    updateScoreBar('Engagement Potential', scoreBreakdown.engagementPotential || 0);
+    updateScoreBar('Contact Accessibility', scoreBreakdown.contactQuality || 0);
 }
 
 function updateScoreBar(label, score) {
@@ -3539,13 +3539,13 @@ function updateModalProfile(candidate) {
     if (!profileSection) return;
 
     const profileData = [
-        ['Experience:', candidate.experience || 'Experienced professional'],
+        ['Experience:', candidate.experience || 'Professional background'],
         ['Current Role:', candidate.title],
         ['Location:', candidate.location],
         ['Source:', candidate.source],
-        ['Salary Range:', candidate.salaryRange || 'Not specified'],
-        ['Hiring Difficulty:', candidate.hiringDifficulty || 'Not assessed'],
-        ['Profile Updated:', candidate.lastUpdated]
+        ['Budget Authority:', candidate.estimatedBudget || 'Not assessed'],
+        ['Contact Difficulty:', candidate.contactDifficulty?.split(' - ')[0] || 'Not assessed'],
+        ['Purchase Timeline:', 'Q1-Q2 2025 (Est.)']
     ];
 
     const profileContent = profileSection.querySelector('.space-y-3');
@@ -3554,13 +3554,19 @@ function updateModalProfile(candidate) {
             ${profileData.map(([label, value]) => `
                 <div class="flex justify-between">
                     <span class="text-gray-400">${label}</span>
-                    <span class="text-white text-right">${value}</span>
+                    <span class="text-white text-right ${label === 'Budget Authority:' ? 'text-green-400 font-semibold' : ''}">${value}</span>
                 </div>
             `).join('')}
             ${candidate.companyContext ? `
                 <div class="pt-3 border-t border-gray-600">
                     <span class="text-gray-400 block mb-2">Company Context:</span>
                     <span class="text-white text-sm leading-relaxed">${candidate.companyContext}</span>
+                </div>
+            ` : ''}
+            ${candidate.marketPosition ? `
+                <div class="pt-3 border-t border-gray-600">
+                    <span class="text-gray-400 block mb-2">Market Position:</span>
+                    <span class="text-white text-sm leading-relaxed">${candidate.marketPosition}</span>
                 </div>
             ` : ''}
             <div class="flex justify-between items-center pt-2">
@@ -3586,10 +3592,10 @@ function updateModalStrengths(candidate) {
     const strengthsSection = candidateModal.querySelector('.grid.grid-cols-1.md\\:grid-cols-2 > div:last-child .space-y-2');
     if (!strengthsSection) return;
 
-    const strengths = candidate.strengths || ['Professional background', 'Industry experience'];
+    const strengths = candidate.strengths || ['Strategic business value potential', 'Decision-making influence'];
     strengthsSection.innerHTML = strengths.map(strength => `
         <div class="flex items-center space-x-2">
-            <div class="w-2 h-2 bg-accent-cyan rounded-full"></div>
+            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
             <span class="text-gray-300 text-sm">${strength}</span>
         </div>
     `).join('');
@@ -3599,7 +3605,7 @@ function updateModalConcerns(candidate) {
     const concernsSection = candidateModal.querySelector('.bg-yellow-900\\/20 .space-y-2');
     if (!concernsSection) return;
 
-    const concerns = candidate.concerns || ['Profile verification recommended before contact'];
+    const concerns = candidate.concerns || ['Standard qualification recommended before outreach'];
     concernsSection.innerHTML = concerns.map(concern => `
         <div class="flex items-start space-x-2">
             <span class="text-yellow-400">•</span>
@@ -3607,7 +3613,7 @@ function updateModalConcerns(candidate) {
         </div>
     `).join('');
 }
-
+	
 function updateModalRecommendation(candidate) {
     const recommendationSection = candidateModal.querySelector('.bg-accent-cyan\\/10 p.text-gray-300');
     if (!recommendationSection) return;
@@ -3625,7 +3631,7 @@ function updateModalRecommendation(candidate) {
 
     // Combine the reliable priority label with the cleaned text
     recommendationSection.innerHTML = `
-        <strong>${priorityLabel} Priority Contact:</strong> ${recommendationText}
+        <strong>${priorityLabel} Priority Prospect:</strong> ${recommendationText}
     `;
 }
 	
@@ -3634,10 +3640,10 @@ function updateModalCurrentSkills(candidate) {
     const skillsContainer = candidateModal.querySelector('#currentSkillsContainer');
     if (!skillsContainer) return;
 
-    const currentSkills = candidate.currentSkills || [];
-    skillsContainer.innerHTML = currentSkills.map(skill => `
+    const decisionFactors = candidate.decisionFactors || [];
+    skillsContainer.innerHTML = decisionFactors.map(factor => `
         <span class="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm rounded-full font-medium">
-            ${skill}
+            ${factor}
         </span>
     `).join('');
 }
@@ -3647,11 +3653,11 @@ function updateModalGrowthOpportunities(candidate) {
     const growthContainer = candidateModal.querySelector('#growthOpportunitiesContainer');
     if (!growthContainer) return;
 
-    const growthOpportunities = candidate.growthOpportunities || [];
-    growthContainer.innerHTML = growthOpportunities.map(opportunity => `
+    const engagementStrategy = candidate.engagementStrategy || [];
+    growthContainer.innerHTML = engagementStrategy.map(strategy => `
         <div class="flex items-center space-x-2">
-            <div class="w-2 h-2 bg-accent-cyan rounded-full flex-shrink-0"></div>
-            <span class="text-gray-300 text-sm">${opportunity}</span>
+            <div class="w-2 h-2 bg-cyan-400 rounded-full flex-shrink-0"></div>
+            <span class="text-gray-300 text-sm">${strategy}</span>
         </div>
     `).join('');
 }
