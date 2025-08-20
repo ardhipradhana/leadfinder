@@ -3269,8 +3269,8 @@ function createSnippet(candidate) {
 function createCandidateCardHTML(candidate) {
     console.log(`=== RENDERING CARD FOR: ${candidate.name} ===`);
     console.log('Has analytics:', !!candidate.careerAnalytics);
-    if (candidate.careerAnalytics) {
-        console.log('Analytics preview:', candidate.careerAnalytics.substring(0, 100) + '...');
+    if (candidate.salesAnalytics) {
+        console.log('Analytics preview:', candidate.salesAnalytics.substring(0, 100) + '...');
     }
 
 	if (!candidate.name || typeof candidate.name !== 'string') {
@@ -3288,7 +3288,7 @@ function createCandidateCardHTML(candidate) {
     const priority = candidate.recommendation?.toLowerCase().includes('high priority') ? 'high' :
                     candidate.recommendation?.toLowerCase().includes('low priority') ? 'low' : 'medium';
     
-    const hasAnalytics = candidate.careerAnalytics && candidate.careerAnalytics.trim().length > 0;
+    const hasAnalytics = candidate.salesAnalytics && candidate.salesAnalytics.trim().length > 0;
     
     // Sales lead specific data
     const estimatedBudget = candidate.estimatedBudget || 'Budget not estimated';
@@ -3412,17 +3412,26 @@ function createCandidateCardHTML(candidate) {
             </div>
 
             <!-- Upgrade Analytics Button -->
-            ${!hasAnalytics ? `
+            ${hasAnalytics ? `
+			<div class="mt-3 pt-3 border-t border-gray-600/30">
+			    <div class="w-full px-3 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 text-purple-300 text-xs font-medium rounded-md flex items-center justify-center space-x-2">
+			        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+			        </svg>
+			        <span>Sales Intelligence Ready</span>
+			    </div>
+			</div>
+			` : `
 			<div class="mt-3 pt-3 border-t border-gray-600/30">
 			    <button class="upgrade-analytics-btn w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1" 
 			            data-candidate-id="${candidate.id}">
 			        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-			            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+			            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
 			        </svg>
 			        <span>Analytics (5 credits)</span>
 			    </button>
 			</div>
-			` : ''}
+			`}
         </div>
     `;
 }
@@ -6474,8 +6483,8 @@ async function upgradeIndividualCandidate(candidateId) {
 function showIndividualAnalyticsAnimation(candidateName) {
     individualAnalyticsCancelled = false;
     
-    // Update candidate name
-    document.getElementById('individualAnalyticsCandidate').textContent = `Analyzing ${candidateName}'s career potential...`;
+    // Update candidate name - SALES FOCUSED
+    document.getElementById('individualAnalyticsCandidate').textContent = `Analyzing ${candidateName}'s sales potential and engagement strategy...`;
     
     // Reset all steps
     for (let i = 1; i <= 4; i++) {
@@ -6500,7 +6509,7 @@ function showIndividualAnalyticsAnimation(candidateName) {
     // Start animation
     runIndividualAnalyticsAnimation();
 }
-
+	
 // Run the analysis animation
 async function runIndividualAnalyticsAnimation() {
     const steps = [
@@ -9351,8 +9360,8 @@ setTimeout(() => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                 </svg>
             </div>
-            <h3 class="text-2xl font-bold text-white mb-2">Career Predictive Analytics</h3>
-            <p class="text-gray-400" id="individualAnalyticsCandidate">Analyzing candidate potential...</p>
+            <h3 class="text-2xl font-bold text-white mb-2">Sales Intelligence Analyticss</h3>
+            <p class="text-gray-400" id="individualAnalyticsCandidate">Analyzing prospects...</p>
         </div>
 
         <!-- Progress Bar -->
@@ -9373,8 +9382,8 @@ setTimeout(() => {
                     <span class="text-xs text-gray-400">1</span>
                 </div>
                 <div class="flex-1">
-                    <div class="text-sm text-white">Processing candidate profile</div>
-                    <div class="text-xs text-gray-500">Extracting skills, experience, and career trajectory</div>
+                    <div class="text-sm text-white">Processing prospect profile</div>
+                    <div class="text-xs text-gray-500">Extracting decision authority, budget signals, and business context</div>
                 </div>
                 <span class="text-xs text-gray-400" id="status-1">Pending</span>
             </div>
@@ -9385,7 +9394,7 @@ setTimeout(() => {
                 </div>
                 <div class="flex-1">
                     <div class="text-sm text-white">Analyzing market trends</div>
-                    <div class="text-xs text-gray-500">Comparing against industry standards and benchmarks</div>
+                    <div class="text-xs text-gray-500">Comparing against industry buying patterns and market intelligence</div>
                 </div>
                 <span class="text-xs text-gray-400" id="status-2">Pending</span>
             </div>
@@ -9395,8 +9404,8 @@ setTimeout(() => {
                     <span class="text-xs text-gray-400">3</span>
                 </div>
                 <div class="flex-1">
-                    <div class="text-sm text-white">Calculating growth potential</div>
-                    <div class="text-xs text-gray-500">Predicting career advancement opportunities</div>
+                    <div class="text-sm text-white">Calculating sales potential</div>
+                    <div class="text-xs text-gray-500">Predicting purchase probability and deal opportunities</div>
                 </div>
                 <span class="text-xs text-gray-400" id="status-3">Pending</span>
             </div>
@@ -9407,7 +9416,7 @@ setTimeout(() => {
                 </div>
                 <div class="flex-1">
                     <div class="text-sm text-white">Generating insights report</div>
-                    <div class="text-xs text-gray-500">Creating comprehensive analytics summary</div>
+                    <div class="text-xs text-gray-500">Creating comprehensive sales strategy summary</div>
                 </div>
                 <span class="text-xs text-gray-400" id="status-4">Pending</span>
             </div>
@@ -9416,7 +9425,7 @@ setTimeout(() => {
         <!-- Dynamic Tip -->
         <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-4 border border-purple-500/20">
             <p class="text-sm text-purple-300" id="individualAnalyticsTip">
-                🧠 Our AI analyzes 50+ data points to predict career potential
+                🧠 Our AI analyzes 50+ data points to predict sales potential and engagement strategy
             </p>
         </div>
 
