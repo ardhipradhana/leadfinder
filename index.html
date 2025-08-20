@@ -2836,14 +2836,14 @@ async function handleSearch(e) {
 
         const formData = new FormData(searchForm);
         const searchParams = {
-		    jobTitle: formData.get('jobTitle') || (document.getElementById('jobTitle')?.value || ''),
-		    industry: getIndustryValue(),
-		    location: getLocationValue(),
-		    experience: formData.get('experience') || (document.getElementById('experience')?.value || '')
-		};
+            jobTitle: formData.get('jobTitle') || (document.getElementById('jobTitle')?.value || ''),
+            industry: getIndustryValue(),
+            location: getLocationValue(),
+            experience: formData.get('experience') || (document.getElementById('experience')?.value || '')
+        };
 
         if (!searchParams.jobTitle) {
-            showCustomToast('Missing Information', 'Please enter a job title or role', 'error');
+            showCustomToast('Missing Information', 'Please enter a target role or prospect type', 'error');
             isProcessing = false;
             enableActionButtons();
             return;
@@ -2859,7 +2859,7 @@ async function handleSearch(e) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 300000);
 
-        // --- CORRECTED WEBHOOK CALL ---
+        // --- WEBHOOK CALL ---
         const response = await fetch('https://n8n.srv909550.hstgr.cloud/webhook/leadfinder-tool', {
             method: 'POST',
             signal: controller.signal,
@@ -2873,7 +2873,7 @@ async function handleSearch(e) {
                 timestamp: new Date().toISOString()
             })
         });
-        // --- END OF CORRECTION ---
+        // --- END OF WEBHOOK CALL ---
 
         clearTimeout(timeoutId);
 
@@ -2885,29 +2885,62 @@ async function handleSearch(e) {
         const data = await response.json();
         await loadingPromise;
         
+        // Handle both array and single object responses
         const responseData = Array.isArray(data) ? data[0] : data;
-
-        if (responseData.success) {
+        
+        // Check for success and valid data
+        if (responseData.success && responseData.prospects && responseData.prospects.length > 0) {
             cancelLoadingAnimation();
+
+            // Convert prospects to candidates format for compatibility with existing UI
+            const prospects = responseData.prospects || [];
+            responseData.candidates = prospects; // Keep existing UI functions working
+            responseData.topCandidatesCount = responseData.topProspectsCount || prospects.length;
+
+            // Deduct credit and log transaction
             const creditDeducted = await deductCredit(1);
             if (creditDeducted) {
-                await logCreditTransaction(-1, 'search', `Search: ${searchParams.jobTitle} in ${searchParams.location}`);
+                await logCreditTransaction(-1, 'lead_search', `Lead Search: ${searchParams.jobTitle} in ${searchParams.location}`);
                 await syncCreditsAfterEvent('search_completed');
             }
-            saveToSearchHistory(searchParams, responseData.topCandidatesCount, responseData.candidates);
+
+            // Save to search history (using prospects data)
+            saveToSearchHistory(searchParams, responseData.topCandidatesCount, prospects);
+            
+            // Process and display results
             processSearchResults(responseData, searchParams);
+            
             loadingState.classList.add('hidden');
             resultsState.classList.remove('hidden');
+
+        } else if (responseData.success && (!responseData.prospects || responseData.prospects.length === 0)) {
+            // No prospects found
+            throw new Error('No prospects found matching your criteria. Try adjusting your search parameters.');
         } else {
-            throw new Error(responseData.error || 'Search failed - no success flag');
+            // API returned error
+            throw new Error(responseData.error || 'Search failed - invalid response from server');
         }
 
     } catch (error) {
-        console.error('Search failed:', error);
-        showCustomToast('Search Failed', error.message || 'An unexpected error occurred.', 'error');
+        console.error('Lead search failed:', error);
+        
+        // Better error messages for different scenarios
+        let errorMessage = 'An unexpected error occurred.';
+        if (error.message.includes('HTTP error')) {
+            errorMessage = 'Server connection failed. Please try again.';
+        } else if (error.message.includes('prospects found')) {
+            errorMessage = error.message;
+        } else if (error.message.includes('abort')) {
+            errorMessage = 'Search timed out. Please try with more specific criteria.';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+
+        showCustomToast('Search Failed', errorMessage, 'error');
         loadingState.classList.add('hidden');
         initialState.classList.remove('hidden');
         cancelLoadingAnimation();
+
     } finally {
         // --- RESET GLOBAL LOADING STATE ---
         isProcessing = false;
@@ -2915,7 +2948,6 @@ async function handleSearch(e) {
         // ----------------------------------
     }
 }
-
 // Log credit transaction
 async function logCreditTransaction(amount, type, description) {
     if (!currentUser) return;
