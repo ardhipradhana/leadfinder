@@ -1311,7 +1311,7 @@
                     <p class="text-gray-300 mb-4">Strong match for Restaurant Manager position with excellent leadership experience and location compatibility. Recommended for immediate contact.</p>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <span class="text-sm text-gray-400">Role Relevance</span>
+                            <span class="text-sm text-gray-400">Decision Authority</span>
                             <div class="flex items-center space-x-2 mt-1">
                                 <div class="flex-1 bg-gray-600 rounded-full h-2">
                                     <div class="bg-accent-cyan h-2 rounded-full" style="width: 90%"></div>
@@ -1320,7 +1320,7 @@
                             </div>
                         </div>
                         <div>
-                            <span class="text-sm text-gray-400">Experience Match</span>
+                            <span class="text-sm text-gray-400">Budget Influence</span>
                             <div class="flex items-center space-x-2 mt-1">
                                 <div class="flex-1 bg-gray-600 rounded-full h-2">
                                     <div class="bg-accent-cyan h-2 rounded-full" style="width: 85%"></div>
@@ -1329,7 +1329,7 @@
                             </div>
                         </div>
                         <div>
-                            <span class="text-sm text-gray-400">Location Fit</span>
+                            <span class="text-sm text-gray-400">Engagement Potential</span>
                             <div class="flex items-center space-x-2 mt-1">
                                 <div class="flex-1 bg-gray-600 rounded-full h-2">
                                     <div class="bg-accent-cyan h-2 rounded-full" style="width: 95%"></div>
@@ -1338,7 +1338,7 @@
                             </div>
                         </div>
                         <div>
-                            <span class="text-sm text-gray-400">Profile Quality</span>
+                            <span class="text-sm text-gray-400">Contact Accessibility</span>
                             <div class="flex items-center space-x-2 mt-1">
                                 <div class="flex-1 bg-gray-600 rounded-full h-2">
                                     <div class="bg-accent-cyan h-2 rounded-full" style="width: 70%"></div>
@@ -1403,7 +1403,7 @@
                         </div>
 			<!-- Current Skills Section -->
 			<div class="mt-6">
-			    <h4 class="text-lg font-semibold text-white mb-3">Current Skills</h4>
+			    <h4 class="text-lg font-semibold text-white mb-3">Current Needs</h4>
 			    <div id="currentSkillsContainer" class="flex flex-wrap gap-2">
 				<!-- Skills will be populated by JavaScript -->
 			    </div>
@@ -1411,7 +1411,7 @@
 			
 			<!-- Growth Opportunities Section -->
 			<div class="mt-6">
-			    <h4 class="text-lg font-semibold text-white mb-3">Growth Opportunities</h4>
+			    <h4 class="text-lg font-semibold text-white mb-3">Engagement Strategy</h4>
 			    <div id="growthOpportunitiesContainer" class="space-y-2">
 				<!-- Growth opportunities will be populated by JavaScript -->
 			    </div>
@@ -3663,47 +3663,56 @@ function updateModalGrowthOpportunities(candidate) {
 }
 
 // Parse career analytics text into structured sections
-function parseCareerAnalytics(rawText) {
+function parseSalesAnalytics(rawText) {
     if (!rawText) return null;
     
     const sections = {
         executiveSummary: '',
-        currentStrengths: '',
-        growthPotential: '',
-        careerTrajectory: '',
+        opportunityForecast: '',
+        budgetAnalysis: '',
+        salesApproach: '',
+        marketIntelligence: '',
         riskAssessment: '',
-        hiringRecommendation: ''
+        salesRecommendation: ''
     };
     
-    // Split by emoji headers
-    const parts = rawText.split(/(?=🏆|📈|💰|🎯|🌐|🔍|📊|⚡)/);
+    // Split by emoji headers for sales analytics
+    const parts = rawText.split(/(?=🎯|📈|💰|🎯|🌐|🔍|📊|⚡|🔗)/);
     
     parts.forEach(part => {
-        if (part.includes('🏆 Potential Rating')) {
+        if (part.includes('🎯 AI Sales Opportunity Intelligence')) {
             // Extract key metrics for executive summary
-            const potentialMatch = part.match(/Potential Rating: (\d+\/100)/);
-            const levelMatch = part.match(/Current Level: (\d+\/100)/);
-            const speedMatch = part.match(/Development Speed: ([^)]+\))/);
+            const prospectMatch = part.match(/Prospect Rating: (\d+\/100)/);
+            const authorityMatch = part.match(/Purchase Authority: (\d+\/100)/);
+            const readinessMatch = part.match(/Engagement Readiness: ([^)]+\))/);
             
-            if (potentialMatch && levelMatch && speedMatch) {
-                sections.executiveSummary = `${potentialMatch[1]} potential rating with ${levelMatch[1]} current performance level. ${speedMatch[1]} development timeline.`;
+            if (prospectMatch && authorityMatch && readinessMatch) {
+                sections.executiveSummary = `${prospectMatch[1]} prospect rating with ${authorityMatch[1]} purchase authority. ${readinessMatch[1]} engagement timeline.`;
             }
         }
         
-        if (part.includes('📈 Career Trajectory') || part.includes('💰 Compensation')) {
-            sections.careerTrajectory += part;
+        if (part.includes('📈 Sales Opportunity Forecast') || part.includes('💰 Budget & Investment Analysis')) {
+            sections.opportunityForecast += part;
         }
         
-        if (part.includes('🎯 Strategic Development') || part.includes('⚡ Acceleration Strategies')) {
-            sections.growthPotential += part;
+        if (part.includes('💰 Budget & Investment Analysis')) {
+            sections.budgetAnalysis += part;
         }
         
-        if (part.includes('📊 Peer Benchmarking') || part.includes('🌐 Market Intelligence')) {
-            sections.currentStrengths += part;
+        if (part.includes('🎯 Strategic Sales Approach') || part.includes('⚡ Sales Acceleration Strategies')) {
+            sections.salesApproach += part;
         }
         
-        if (part.includes('🔍 Risk Assessment')) {
+        if (part.includes('🌐 Market Intelligence') || part.includes('📊 Competitive Positioning')) {
+            sections.marketIntelligence += part;
+        }
+        
+        if (part.includes('🔍 Purchase Risk Assessment')) {
             sections.riskAssessment = part;
+        }
+        
+        if (part.includes('🔗 Engagement Recommendations')) {
+            sections.salesRecommendation += part;
         }
     });
     
@@ -3714,8 +3723,10 @@ function parseCareerAnalytics(rawText) {
         }
     });
     
-    // Generate hiring recommendation from key insights
-    sections.hiringRecommendation = "Based on the analysis above, this candidate shows strong potential for strategic roles. Consider for positions requiring leadership development and analytical thinking.";
+    // Generate final recommendation from key insights
+    if (!sections.salesRecommendation) {
+        sections.salesRecommendation = "Based on the analysis above, this prospect shows strong potential for strategic sales engagement. Consider priority outreach with value-focused messaging.";
+    }
     
     return sections;
 }
@@ -3774,98 +3785,115 @@ function formatSubSection(text, sectionType) {
 
 // Update career analytics section in modal
 function updateModalCareerAnalytics(candidate) {
-    console.log('=== FUNCTION CALLED ===');
+    console.log('=== UPDATING SALES ANALYTICS ===');
     const analyticsContainer = candidateModal.querySelector('#careerAnalyticsContent');
     
-    console.log('=== DEBUGGING CAREER ANALYTICS ===');
     console.log('Full candidate object:', candidate);
-    console.log('candidate.careerAnalytics:', candidate.careerAnalytics);
+    console.log('candidate.salesAnalytics:', candidate.salesAnalytics);
     
-    if (analyticsContainer && candidate.careerAnalytics) {
+    if (analyticsContainer && candidate.salesAnalytics) {
         // Parse the analytics text
-        let analyticsText = candidate.careerAnalytics;
+        let analyticsText = candidate.salesAnalytics;
         if (typeof analyticsText === 'object' && analyticsText.output) {
             const parsed = JSON.parse(analyticsText.output);
-            analyticsText = parsed.careerAnalytics;
+            analyticsText = parsed.salesAnalytics;
         }
         
         // Parse into structured sections
-        const sections = parseCareerAnalytics(analyticsText);
-        console.log('Parsed sections:', sections);
-        console.log('Parsed sections details:', JSON.stringify(sections, null, 2));
+        const sections = parseSalesAnalytics(analyticsText);
+        console.log('Parsed sales sections:', sections);
         
         if (sections) {
-            console.log('=== APPLYING NEW HTML ===');
-            console.log('Current Strengths raw text:', sections.currentStrengths);
+            console.log('=== APPLYING SALES ANALYTICS HTML ===');
             
             analyticsContainer.innerHTML = `
         <!-- Executive Summary -->
         <div class="mb-5 p-5 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg">
             <div class="flex items-center space-x-3 mb-3">
                 <div class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-lg">🏆</span>
+                    <span class="text-lg">🎯</span>
                 </div>
-                <h4 class="text-lg font-bold text-purple-400">Executive Summary</h4>
+                <h4 class="text-lg font-bold text-purple-400">Sales Opportunity Summary</h4>
             </div>
             <p class="text-gray-300 leading-relaxed text-base">${sections.executiveSummary}</p>
         </div>
 
-        <!-- Current Strengths -->
+        <!-- Opportunity Forecast -->
         <div class="mb-5 p-5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg">
             <div class="flex items-center space-x-3 mb-4">
                 <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-lg">💪</span>
+                    <span class="text-lg">📈</span>
                 </div>
-                <h4 class="text-lg font-bold text-green-400">Current Strengths</h4>
+                <h4 class="text-lg font-bold text-green-400">Sales Opportunity Forecast</h4>
             </div>
             <div class="space-y-4">
                 <div>
-                    <h5 class="font-semibold text-green-300 mb-2">Market Intelligence & Positioning</h5>
-                    <div class="pl-4 border-l-2 border-green-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.currentStrengths, 'Market Intelligence')}</div>
+                    <h5 class="font-semibold text-green-300 mb-2">Immediate Business Needs</h5>
+                    <div class="pl-4 border-l-2 border-green-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.opportunityForecast, 'Immediate Needs')}</div>
                 </div>
                 <div>
-                    <h5 class="font-semibold text-green-300 mb-2">Peer Benchmarking</h5>
-                    <div class="pl-4 border-l-2 border-green-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.currentStrengths, 'Peer Benchmarking')}</div>
+                    <h5 class="font-semibold text-green-300 mb-2">Deal Size Potential</h5>
+                    <div class="pl-4 border-l-2 border-green-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.opportunityForecast, 'Deal Size')}</div>
                 </div>
             </div>
         </div>
 
-        <!-- Career Trajectory -->
+        <!-- Budget Analysis -->
         <div class="mb-5 p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg">
             <div class="flex items-center space-x-3 mb-4">
                 <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                    <span class="text-lg">📈</span>
+                    <span class="text-lg">💰</span>
                 </div>
-                <h4 class="text-lg font-bold text-blue-400">Career Trajectory & Compensation</h4>
+                <h4 class="text-lg font-bold text-blue-400">Budget & Investment Analysis</h4>
             </div>
             <div class="space-y-4">
                 <div>
-                    <h5 class="font-semibold text-blue-300 mb-2">Career Trajectory Forecast</h5>
-                    <div class="pl-4 border-l-2 border-blue-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.careerTrajectory, 'Career Trajectory')}</div>
+                    <h5 class="font-semibold text-blue-300 mb-2">Current Spending Power</h5>
+                    <div class="pl-4 border-l-2 border-blue-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.budgetAnalysis, 'Spending Power')}</div>
                 </div>
                 <div>
-                    <h5 class="font-semibold text-blue-300 mb-2">Compensation Progression Analysis</h5>
-                    <div class="pl-4 border-l-2 border-blue-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.careerTrajectory, 'Compensation')}</div>
+                    <h5 class="font-semibold text-blue-300 mb-2">Investment Priorities</h5>
+                    <div class="pl-4 border-l-2 border-blue-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.budgetAnalysis, 'Investment')}</div>
                 </div>
             </div>
         </div>
 
-        <!-- Growth Potential -->
+        <!-- Sales Approach -->
         <div class="mb-5 p-5 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
             <div class="flex items-center space-x-3 mb-4">
                 <div class="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
                     <span class="text-lg">🎯</span>
                 </div>
-                <h4 class="text-lg font-bold text-yellow-400">Growth Potential & Development</h4>
+                <h4 class="text-lg font-bold text-yellow-400">Strategic Sales Approach</h4>
             </div>
             <div class="space-y-4">
                 <div>
-                    <h5 class="font-semibold text-yellow-300 mb-2">Strategic Development Roadmap</h5>
-                    <div class="pl-4 border-l-2 border-yellow-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.growthPotential, 'Strategic Development')}</div>
+                    <h5 class="font-semibold text-yellow-300 mb-2">Key Pain Points</h5>
+                    <div class="pl-4 border-l-2 border-yellow-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.salesApproach, 'Pain Points')}</div>
                 </div>
                 <div>
-                    <h5 class="font-semibold text-yellow-300 mb-2">Acceleration Strategies</h5>
-                    <div class="pl-4 border-l-2 border-yellow-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.growthPotential, 'Acceleration')}</div>
+                    <h5 class="font-semibold text-yellow-300 mb-2">Sales Acceleration Strategies</h5>
+                    <div class="pl-4 border-l-2 border-yellow-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.salesApproach, 'Acceleration')}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Intelligence -->
+        <div class="mb-5 p-5 bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border border-cyan-500/30 rounded-lg">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-8 h-8 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                    <span class="text-lg">🌐</span>
+                </div>
+                <h4 class="text-lg font-bold text-cyan-400">Market Intelligence & Timing</h4>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <h5 class="font-semibold text-cyan-300 mb-2">Industry Demand Assessment</h5>
+                    <div class="pl-4 border-l-2 border-cyan-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.marketIntelligence, 'Industry Demand')}</div>
+                </div>
+                <div>
+                    <h5 class="font-semibold text-cyan-300 mb-2">Competitive Positioning</h5>
+                    <div class="pl-4 border-l-2 border-cyan-500/30 text-gray-300 leading-relaxed">${formatSubSection(sections.marketIntelligence, 'Competitive')}</div>
                 </div>
             </div>
         </div>
@@ -3876,32 +3904,30 @@ function updateModalCareerAnalytics(candidate) {
                 <div class="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
                     <span class="text-lg">🔍</span>
                 </div>
-                <h4 class="text-lg font-bold text-red-400">Risk Assessment</h4>
+                <h4 class="text-lg font-bold text-red-400">Purchase Risk Assessment</h4>
             </div>
             <div class="text-gray-300 leading-relaxed">${sections.riskAssessment}</div>
         </div>
 
-        <!-- Hiring Recommendation -->
+        <!-- Sales Recommendation -->
         <div class="p-5 bg-gradient-to-r from-accent-cyan/10 to-accent-teal/10 border border-accent-cyan/30 rounded-lg">
             <div class="flex items-center space-x-3 mb-3">
                 <div class="w-8 h-8 bg-accent-cyan/20 rounded-lg flex items-center justify-center">
-                    <span class="text-lg">💡</span>
+                    <span class="text-lg">🔗</span>
                 </div>
-                <h4 class="text-lg font-bold text-accent-cyan">Hiring Recommendation</h4>
+                <h4 class="text-lg font-bold text-accent-cyan">Engagement Recommendations</h4>
             </div>
-            <p class="text-gray-300 leading-relaxed text-base">${sections.hiringRecommendation}</p>
+            <p class="text-gray-300 leading-relaxed text-base">${sections.salesRecommendation}</p>
         </div>
     `;
-            console.log('=== HTML APPLIED ===');
-            console.log('Container after update:', analyticsContainer.innerHTML.substring(0, 200));
+            console.log('=== SALES ANALYTICS HTML APPLIED ===');
         } else {
             console.log('=== USING FALLBACK ===');
-            // Fallback to original display
             analyticsContainer.textContent = analyticsText;
         }
     } else if (analyticsContainer) {
         // Clear analytics section if no analytics available
-        analyticsContainer.innerHTML = '<p class="text-gray-400">No career analytics available for this candidate.</p>';
+        analyticsContainer.innerHTML = '<p class="text-gray-400">No sales analytics available for this prospect.</p>';
     }
 }
 
@@ -6355,30 +6381,26 @@ function updateLoadingTip(tip) {
 }
 
 // Individual candidate upgrade
-async function upgradeIndividualCandidate(candidateId) {
-    // --- GLOBAL LOADING CHECK ---
-    if (isProcessing) {
-        showCustomToast('Please Wait', 'Another operation is in progress.', 'info');
-        throw new Error('Operation in progress');
-    }
-    isProcessing = true;
-    disableActionButtons();
-    // ----------------------------
-
+// Update the individual prospect analytics function
+async function upgradeIndividualCandidate(event, candidateId) {
+    event.stopPropagation();
+    
+    // ... existing loading checks ...
+    
     try {
         const candidate = currentCandidates.find(c => c.id === candidateId);
         if (!candidate) {
-            throw new Error('Candidate not found');
+            throw new Error('Prospect not found');
         }
 
         // Show the dedicated animation modal for this process
         showIndividualAnalyticsAnimation(candidate.name);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
 
         const requestBody = {
-            candidate: candidate,
+            candidate: candidate,  // Send full prospect data
             userId: currentUser?.id || 'test-user-123',
             timestamp: new Date().toISOString(),
             type: 'individual'
@@ -6406,42 +6428,39 @@ async function upgradeIndividualCandidate(candidateId) {
             const candidateIndex = currentCandidates.findIndex(c => c.id === candidateId);
 
             if (candidateIndex !== -1) {
-                // Update the candidate data in our main list
-                currentCandidates[candidateIndex].careerAnalytics = result.careerAnalytics;
-                updateCandidateCards(currentCandidates); // Refresh the UI
+                // Update the candidate data with SALES analytics
+                currentCandidates[candidateIndex].salesAnalytics = result.salesAnalytics;
+                updateCandidateCards(currentCandidates);
 
                 // Deduct credits and log the transaction
                 const creditDeducted = await deductCredit(5);
                 if (creditDeducted) {
-                    await logCreditTransaction(-5, 'individual_analytics', `Individual Analytics: ${result.candidateName}`);
+                    await logCreditTransaction(-5, 'sales_analytics', `Sales Intelligence: ${result.prospectName}`);
                 }
 
                 // Save this new data to the analytics history
                 saveToSearchHistory({
-                    jobTitle: 'Individual Predictive Analytics',
-                    candidateName: result.candidateName,
+                    jobTitle: 'Individual Sales Intelligence',
+                    prospectName: result.prospectName,
                     type: 'individual'
                 }, 1, [currentCandidates[candidateIndex]]);
 
                 hideIndividualAnalyticsModal();
-                showCustomToast('Success', `Analytics completed for ${result.candidateName}!`, 'success');
+                showCustomToast('Success', `Sales analytics completed for ${result.prospectName}!`, 'success');
             } else {
-                throw new Error("Could not find the candidate to update after analysis.");
+                throw new Error("Could not find the prospect to update after analysis.");
             }
         } else {
-            throw new Error(data.error || 'Analytics process failed');
+            throw new Error(data.error || 'Failed to generate sales analytics');
         }
-
+        
     } catch (error) {
-        console.error('Individual analytics failed:', error);
-        hideIndividualAnalyticsModal(); // Ensure modal is hidden on error
-        // Rethrow the error so the calling function knows it failed
-        throw error;
+        console.error('Sales analytics failed:', error);
+        showCustomToast('Analytics Failed', error.message, 'error');
+        hideIndividualAnalyticsModal();
     } finally {
-        // --- RESET GLOBAL LOADING STATE ---
         isProcessing = false;
         enableActionButtons();
-        // ----------------------------------
     }
 }
 
