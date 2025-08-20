@@ -3259,7 +3259,7 @@ function createSnippet(candidate) {
     }
     
     // Capitalize the first letter for a clean look
-    const finalSnippet = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    const finalSnippet = cleaned && cleaned.length > 0 ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1) : '';
     
     // Provide a default if the snippet is empty after cleaning
     return finalSnippet || 'Experienced professional in a relevant field.';
@@ -3271,6 +3271,11 @@ function createCandidateCardHTML(candidate) {
     console.log('Has analytics:', !!candidate.careerAnalytics);
     if (candidate.careerAnalytics) {
         console.log('Analytics preview:', candidate.careerAnalytics.substring(0, 100) + '...');
+    }
+
+	if (!candidate.name || typeof candidate.name !== 'string') {
+        console.warn('Invalid candidate name:', candidate);
+        candidate.name = 'Unknown Name';
     }
     
     const scorePercentage = (candidate.aiScore * 3.6); // For speedometer UI
@@ -3314,7 +3319,7 @@ function createCandidateCardHTML(candidate) {
                     <!-- Header -->
                     <div class="flex items-start space-x-3 mb-4">
                         <div class="w-12 h-12 bg-accent-cyan/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <span class="text-accent-cyan font-bold text-lg">${candidate.name.charAt(0).toUpperCase()}</span>
+                            <span class="text-accent-cyan font-bold text-lg">${candidate.name && candidate.name.length > 0 ? candidate.name.charAt(0).toUpperCase() : '?'}</span>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center space-x-2 mb-1">
@@ -3380,7 +3385,7 @@ function createCandidateCardHTML(candidate) {
 
                     <!-- Source Badge -->
                     <div class="flex items-center justify-between">
-                        ${createSourceBadge(candidate.source)}
+                        ${getSourceBadge(candidate.source)}
                         ${hasAnalytics ? 
                             `<span class="px-2 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs rounded-full font-medium flex items-center">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
