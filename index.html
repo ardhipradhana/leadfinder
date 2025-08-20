@@ -2836,11 +2836,11 @@ async function handleSearch(e) {
 
         const formData = new FormData(searchForm);
         const searchParams = {
-            jobTitle: formData.get('jobTitle') || document.getElementById('jobTitle').value,
-            industry: getIndustryValue(),
-            location: getLocationValue(),
-            experience: formData.get('experience') || document.getElementById('experience').value
-        };
+		    jobTitle: formData.get('jobTitle') || (document.getElementById('jobTitle')?.value || ''),
+		    industry: getIndustryValue(),
+		    location: getLocationValue(),
+		    experience: formData.get('experience') || (document.getElementById('experience')?.value || '')
+		};
 
         if (!searchParams.jobTitle) {
             showCustomToast('Missing Information', 'Please enter a job title or role', 'error');
@@ -7411,12 +7411,18 @@ document.addEventListener('keydown', (e) => {
 // Initial UI setup: update search history, focus job title input, scale search button on hover
 (async () => {
     await updateSearchHistoryUI();
-    document.getElementById('jobTitle').focus();
+    
+    // Safely focus on jobTitle input
+    const jobTitleInput = document.getElementById('jobTitle');
+    if (jobTitleInput) {
+        jobTitleInput.focus();
+    } else {
+        console.warn('jobTitle input not found for focus');
+    }
 
-	// Initialize bookmark system
+    // Initialize bookmark system
     updateBookmarkCounter();
     updateHistoryTabCounts();
-	
 })();
 const searchBtn = document.getElementById('searchBtn');
 searchBtn.addEventListener('mouseenter', () => {
