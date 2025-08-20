@@ -2859,8 +2859,6 @@ async function handleSearch(e) {
             keepalive: true,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer leadfinder_secretkey123`,
-                'X-User-ID': currentUser?.id || 'test-user-123'
             },
             body: JSON.stringify({
                 ...searchParams,
@@ -6315,8 +6313,6 @@ async function upgradeIndividualCandidate(candidateId) {
             signal: controller.signal,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer leadfinder_secretkey123`,
-                'X-User-ID': currentUser?.id || 'test-user-123'
             },
             body: JSON.stringify(requestBody)
         });
@@ -6571,8 +6567,6 @@ async function upgradeBulkCandidates(candidateIds) {
             signal: controller.signal,
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer leadfinder_secretkey123`,
-                'X-User-ID': currentUser?.id || 'test-user-123'
             },
             body: JSON.stringify({
                 candidates: candidates,
@@ -6667,7 +6661,6 @@ async function generateOutreachMessages(candidateData) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer leadfinder_secretkey123'
             },
             body: JSON.stringify(requestData)
         });
