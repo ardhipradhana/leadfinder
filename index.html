@@ -3413,16 +3413,16 @@ function createCandidateCardHTML(candidate) {
 
             <!-- Upgrade Analytics Button -->
             ${!hasAnalytics ? `
-            <div class="mt-4 pt-4 border-t border-gray-600/30">
-                <button class="upgrade-analytics-btn w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center space-x-2" 
-                        onclick="upgradeIndividualCandidate(event, '${candidate.id}')">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                    <span>Upgrade Analytics (5 credits)</span>
-                </button>
-            </div>
-            ` : ''}
+			<div class="mt-3 pt-3 border-t border-gray-600/30">
+				<button class="upgrade-analytics-btn w-full px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-colors flex items-center justify-center space-x-1" 
+						onclick="upgradeIndividualCandidate(event, '${candidate.id}')">
+					<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+					</svg>
+					<span>Analytics (5 credits)</span>
+				</button>
+			</div>
+			` : ''}
         </div>
     `;
 }
@@ -3430,39 +3430,30 @@ function createCandidateCardHTML(candidate) {
 
 // Attach click handlers to each candidate card (for details modal)
 function attachCandidateCardHandlers(candidates) {
-    document.querySelectorAll('.lead-card').forEach((card, index) => {
+	console.log('Attaching handlers to', document.querySelectorAll('.candidate-card').length, 'cards');
+    document.querySelectorAll('.candidate-card').forEach((card, index) => {
         card.addEventListener('click', (e) => {
             // Don't open modal if we're upgrading a candidate
             if (window.upgradingCandidate) return;
             
-            // Don't open modal if clicking bookmark elements or upgrade button
+            // Don't open modal if clicking interactive elements
             if (e.target.closest('.bookmark-icon') || 
                 e.target.closest('.bookmark-ribbon') ||
                 e.target.closest('.upgrade-analytics-btn') ||
-                e.target.closest('.candidate-checkbox')) {
+                e.target.closest('.candidate-checkbox') ||
+                e.target.closest('button')) {
                 return;
             }
             
             const candidateId = card.getAttribute('data-candidate-id');
             const candidate = candidates.find(c => c.id === candidateId);
             if (candidate) {
+                console.log('Opening modal for:', candidate.name); // Debug log
                 showCandidateModal(candidate);
+            } else {
+                console.error('Candidate not found for ID:', candidateId);
             }
         });
-    });
-	
-	// ADD THIS: Attach checkbox event listeners
-    document.querySelectorAll('.candidate-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function(e) {
-            e.stopPropagation();
-			e.preventDefault();
-            console.log('Checkbox clicked:', this.checked);
-            updateCompareButton();
-        });
-		// Also prevent clicks from bubbling
-	    checkbox.addEventListener('click', function(e) {
-	        e.stopPropagation();
-	    });
     });
 }
 
