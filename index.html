@@ -6382,11 +6382,16 @@ function updateLoadingTip(tip) {
 
 // Individual candidate upgrade
 // Update the individual prospect analytics function
-async function upgradeIndividualCandidate(event, candidateId) {
-    event.stopPropagation();
-    
-    // ... existing loading checks ...
-    
+async function upgradeIndividualCandidate(candidateId) {
+    // --- GLOBAL LOADING CHECK ---
+    if (isProcessing) {
+        showCustomToast('Please Wait', 'Another operation is in progress.', 'info');
+        throw new Error('Operation in progress');
+    }
+    isProcessing = true;
+    disableActionButtons();
+    // ----------------------------
+
     try {
         const candidate = currentCandidates.find(c => c.id === candidateId);
         if (!candidate) {
@@ -6397,10 +6402,10 @@ async function upgradeIndividualCandidate(event, candidateId) {
         showIndividualAnalyticsAnimation(candidate.name);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
         const requestBody = {
-            candidate: candidate,  // Send full prospect data
+            candidate: candidate,
             userId: currentUser?.id || 'test-user-123',
             timestamp: new Date().toISOString(),
             type: 'individual'
@@ -6428,9 +6433,9 @@ async function upgradeIndividualCandidate(event, candidateId) {
             const candidateIndex = currentCandidates.findIndex(c => c.id === candidateId);
 
             if (candidateIndex !== -1) {
-                // Update the candidate data with SALES analytics
+                // Update the candidate data with SALES analytics (updated field name)
                 currentCandidates[candidateIndex].salesAnalytics = result.salesAnalytics;
-                updateCandidateCards(currentCandidates);
+                updateCandidateCards(currentCandidates); // Refresh the UI
 
                 // Deduct credits and log the transaction
                 const creditDeducted = await deductCredit(5);
@@ -6453,14 +6458,16 @@ async function upgradeIndividualCandidate(event, candidateId) {
         } else {
             throw new Error(data.error || 'Failed to generate sales analytics');
         }
-        
+
     } catch (error) {
         console.error('Sales analytics failed:', error);
         showCustomToast('Analytics Failed', error.message, 'error');
         hideIndividualAnalyticsModal();
     } finally {
+        // --- RESET GLOBAL LOADING STATE ---
         isProcessing = false;
         enableActionButtons();
+        // ----------------------------------
     }
 }
 
@@ -7662,15 +7669,15 @@ setTimeout(() => {
 	        
 	        // Check credits (5 credits for individual)
 	        if (userCredits < 5) {
-	            showCustomToast('Insufficient Credits', 'You need 5 credits for individual analytics.', 'error');
+	            showCustomToast('Insufficient Credits', 'You need 5 credits for sales analytics.', 'error');
 	            window.upgradingCandidate = false;
 	            return;
 	        }
 	        
-	        // Show custom confirmation
+	        // Show custom confirmation - Updated for sales focus
 	        const confirmed = await showConfirmModal(
-	            'Career Predictive Analytics',
-	            `Analyze ${candidate.name}'s career potential and growth trajectory for 5 credits?`
+	            'Sales Intelligence Analytics',
+	            `Analyze ${candidate.name}'s sales potential and engagement strategy for 5 credits?`
 	        );
 	        
 	        if (!confirmed) {
