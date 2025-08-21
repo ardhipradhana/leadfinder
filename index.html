@@ -2807,6 +2807,12 @@ function getIndustryValue() {
         return '';
     }
 }
+
+// Get product value from input
+function getProductValue() {
+    const productInput = document.getElementById('product');
+    return productInput?.value.trim() || '';
+}
 	
 // Handle search form submission
 async function handleSearch(e) {
@@ -2843,6 +2849,7 @@ async function handleSearch(e) {
             industry: getIndustryValue(),
             location: getLocationValue(),
             experience: formData.get('experience') || (document.getElementById('experience')?.value || '')
+			product: getProductValue()
         };
 
         if (!searchParams.jobTitle) {
